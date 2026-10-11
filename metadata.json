@@ -1,0 +1,7 @@
+{
+  "name": "DRUMVERSE",
+  "description": "Find Your Rhythm — The premier guide and interactive hub for drum kits, acoustic and electronic percussion, drum education, and buying guides.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
