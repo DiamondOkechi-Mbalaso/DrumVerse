@@ -267,103 +267,158 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Navigation Drawer */}
-      {mobileMenuOpen && (
-        <div
-          ref={mobileNavRef}
-          className="fixed inset-0 top-20 z-40 bg-theme-bg/95 backdrop-blur-xl lg:hidden flex flex-col p-6 overflow-y-auto animate-in fade-in duration-200"
-        >
-          <div className="flex flex-col gap-2">
-            {navLinks.map((link) => {
-              if (link.hasDropdown) {
-                return (
-                  <div key={link.path} className="flex flex-col gap-1 py-1">
-                    <span className="text-xs font-mono font-semibold uppercase tracking-wider text-theme-muted px-3">
-                      {link.name}
-                    </span>
-                    {link.children?.map((child) => (
+      {/* Mobile Navigation Drawer (Slides in from the right) */}
+      {/* Backdrop overlay */}
+      <div
+        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Drawer panel sliding in from right */}
+      <div
+        ref={mobileNavRef}
+        aria-label="Mobile Navigation Menu"
+        role="dialog"
+        aria-modal="true"
+        className={`fixed inset-y-0 right-0 z-50 w-80 max-w-[85vw] bg-theme-surface border-l border-theme-border shadow-2xl flex flex-col transition-transform duration-300 ease-out transform lg:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between p-5 border-b border-theme-border">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+              <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="7" rx="9" ry="3.5" />
+                <path d="M3 7v10c0 1.93 4.03 3.5 9 3.5s9-1.57 9-3.5V7" />
+                <path d="M3 12c0 1.93 4.03 3.5 9 3.5s9-1.57 9-3.5" strokeDasharray="3 3" />
+              </svg>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-lg tracking-tight text-theme-on-surface">
+                DRUMVERSE
+              </span>
+              <span className="text-[9px] font-mono tracking-widest text-primary font-semibold uppercase">
+                FIND YOUR RHYTHM
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2 rounded-lg text-theme-muted hover:text-theme-on-surface hover:bg-theme-surface-high transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Close navigation menu"
+          >
+            <span className="material-symbols-outlined text-[22px]">close</span>
+          </button>
+        </div>
+
+        {/* Drawer Scrollable Navigation Body */}
+        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-2">
+          {navLinks.map((link) => {
+            if (link.hasDropdown) {
+              const active = isLinkActive(link.path);
+              return (
+                <div key={link.path} className="flex flex-col gap-1 py-1">
+                  <button
+                    onClick={() => handleNavClick(link.path)}
+                    className={`text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-between ${
+                      active
+                        ? 'bg-orange-500/15 text-primary'
+                        : 'text-theme-on-surface hover:bg-theme-surface-high'
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                    <span className="text-[10px] font-mono uppercase text-theme-muted">All Kits</span>
+                  </button>
+                  <div className="pl-4 flex flex-col gap-1 border-l-2 border-theme-border/70 ml-3 my-0.5">
+                    {link.children?.slice(1).map((child) => (
                       <button
                         key={child.path}
                         onClick={() => handleNavClick(child.path)}
-                        className={`text-left px-3 py-2.5 rounded-lg text-base font-medium transition-colors ${
+                        className={`text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                           currentPath === child.path
-                            ? 'bg-orange-500/15 text-primary'
-                            : 'text-theme-on-surface hover:bg-theme-surface-high'
+                            ? 'bg-orange-500/15 text-primary font-bold'
+                            : 'text-theme-on-variant hover:bg-theme-surface-high hover:text-theme-on-surface'
                         }`}
                       >
                         {child.name}
                       </button>
                     ))}
                   </div>
-                );
-              }
+                </div>
+              );
+            }
 
-              return (
+            return (
+              <button
+                key={link.path}
+                onClick={() => handleNavClick(link.path)}
+                className={`text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  isLinkActive(link.path)
+                    ? 'bg-orange-500/15 text-primary'
+                    : 'text-theme-on-surface hover:bg-theme-surface-high'
+                }`}
+              >
+                {link.name}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Drawer Footer with Metronome, Theme Switcher & CTA */}
+        <div className="p-5 border-t border-theme-border bg-theme-surface-low/80 flex flex-col gap-3.5 shrink-0">
+          {/* Metronome quick tool */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onOpenMetronome();
+            }}
+            className="flex items-center justify-between p-2.5 rounded-xl bg-theme-surface border border-theme-border text-theme-on-surface hover:border-primary/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-orange-500 text-[18px]">timer</span>
+              <span className="font-medium text-xs">Studio Metronome</span>
+            </div>
+            <span className="text-xs font-mono text-primary font-bold">120 BPM</span>
+          </button>
+
+          {/* Theme Appearance */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-theme-muted font-semibold">
+              Theme Appearance
+            </span>
+            <div className="grid grid-cols-3 gap-1.5 bg-theme-surface p-1 rounded-xl border border-theme-border">
+              {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => (
                 <button
-                  key={link.path}
-                  onClick={() => handleNavClick(link.path)}
-                  className={`text-left px-3 py-2.5 rounded-lg text-base font-medium transition-colors ${
-                    isLinkActive(link.path)
-                      ? 'bg-orange-500/15 text-primary'
-                      : 'text-theme-on-surface hover:bg-theme-surface-high'
+                  key={m}
+                  onClick={() => setTheme(m)}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-medium capitalize flex items-center justify-center gap-1 transition-colors ${
+                    theme === m
+                      ? 'bg-orange-500 text-white font-bold shadow-sm'
+                      : 'text-theme-on-variant hover:text-theme-on-surface'
                   }`}
                 >
-                  {link.name}
+                  <span className="material-symbols-outlined text-[13px]">
+                    {m === 'light' ? 'light_mode' : m === 'dark' ? 'dark_mode' : 'desktop_windows'}
+                  </span>
+                  <span>{m}</span>
                 </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-theme-border flex flex-col gap-4">
-            {/* Metronome quick tool */}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenMetronome();
-              }}
-              className="flex items-center justify-between p-3 rounded-xl bg-theme-surface-low border border-theme-border text-theme-on-surface"
-            >
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-orange-500">timer</span>
-                <span className="font-medium text-sm">Studio Metronome</span>
-              </div>
-              <span className="text-xs font-mono text-primary font-semibold">120 BPM</span>
-            </button>
-
-            {/* Mobile Theme Selector */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-theme-muted">
-                Theme Appearance
-              </span>
-              <div className="grid grid-cols-3 gap-2 bg-theme-surface-low p-1 rounded-xl border border-theme-border">
-                {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setTheme(m)}
-                    className={`py-2 px-3 rounded-lg text-xs font-medium capitalize flex items-center justify-center gap-1.5 transition-colors ${
-                      theme === m
-                        ? 'bg-orange-500 text-white font-semibold shadow-sm'
-                        : 'text-theme-on-variant hover:text-theme-on-surface'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[14px]">
-                      {m === 'light' ? 'light_mode' : m === 'dark' ? 'dark_mode' : 'desktop_windows'}
-                    </span>
-                    <span>{m}</span>
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-
-            <button
-              onClick={() => handleNavClick('/learn')}
-              className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold rounded-xl text-center shadow-lg shadow-orange-500/20 active:scale-95 transition-all mt-2"
-            >
-              Start Learning Now
-            </button>
           </div>
+
+          <button
+            onClick={() => handleNavClick('/learn')}
+            className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs rounded-xl text-center shadow-md shadow-orange-500/20 active:scale-95 transition-all mt-1"
+          >
+            Start Learning Now
+          </button>
         </div>
-      )}
+      </div>
     </header>
   );
 };
